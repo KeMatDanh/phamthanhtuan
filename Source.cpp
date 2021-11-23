@@ -1,400 +1,288 @@
+/*
+Phạm Thanh Tuấn
+Nguyễn Hữu Trung
+Nội dung: Dùng thuật toán Dijkstra tìm đường đi trong khu du lịch Xoài Non
+*/
 #define _CRT_SECURE_NO_WARNINGS
-#include <iostream>
-#include <fstream>
-#include <conio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#define TenFile "TuDienA.txt"
-#define M 26  // so Buckets
+#include<iostream>
+#include<conio.h>
+#include<fstream> 
+#include <string>
+
 using namespace std;
-class Dictionary;
-class Node  // lop node
-{
-private:
-	char word[100];  // truong word la mot tu tieng anh
-	char mean[100];  // truong mean la nghia cua tu
-	Node *next;      // truong next chi nut tiep theo khi nut bi xung dot
-public:
-	Node();
-	Node(Node *k);
-	Node(char nword[], char nmean[]);
-	Node(char nWord[]);
-	void displayWord();
-	void displayMeaning();
-	void Input();
-	friend class Dictionary;
-};
-void Node::Input()             // Ham nhap tu va nghia cho Node
-{
-	cout << "\nInput word: ";
-	fflush(stdin);
-	gets(word);
-	cout << "Mean: ";
-	fflush(stdin);
-	gets(mean);
-};
+#define MAX 100
+#define TRUE 1
+#define FALSE  0
+#define VOCUNG 9999999
 
-void Node::displayWord()
-{
-	cout << "\nWord:" << word;
-}
+int chon = -1;
+char a[10];
+char b[10];
+int n;//số đỉnh của đồ thị.
+int s = 0;//đỉnh đầu.
+int t = 0;//đỉnh cuối
+int danhDau[MAX];//mảng đánh dấu đường đi.
+int d[MAX];//mảng đánh dấu khoảng cách.
+int Matran[MAX][MAX];//ma trận trọng số
+int Duyet[MAX];//mảng đánh dấu đỉnh đã được gán nhãn.
+int  tam[MAX];
 
-void Node::displayMeaning()
-{
-	cout << "\t\tMean:" << mean;
-}
 
-Node::Node(char nWord[])
-{
-	strcpy(word, nWord);
-	next = NULL;
-}
-
-Node::Node(char nword[], char nmean[])
-{
-	for (int i = 0; i < 100; i++)
-	{
-		word[i] = '\0';
-		mean[i] = '\0';
-	}
-	strcpy(word, nword);
-	strcpy(mean, nmean);
-	next = NULL;
-}
-
-Node::Node()
-{
-	for (int i = 0; i < 100; i++)
-	{
-		word[i] = '\0';
-		mean[i] = '\0';
-	}
-	next = NULL;
-};
-
-Node::Node(Node *k)
-{
-	for (int i = 0; i < 100; i++)
-	{
-		word[i] = '\0';
-		mean[i] = '\0';
-	}
-	strcpy(word, k->word);
-	strcpy(mean, k->mean);
-	next = NULL;
-}
-
-class Dictionary   //////////////////////////**/////////////////////// lop tu dien
-{
-private:
-	Node *Bucket[M]; // Mang cac bucket
-public:
-	Dictionary();
-
-	bool Isempty();                         // Kiem tra xem bang bam co rong khong
-
-	int  HashFunc(char c);                         // Ham bam
-
-	void DocFile(Node Bucket[],int &n);
-	void xuatFile(Node Bucket[], int n);
-	void Insert(char nWord[], char nMean[]); // Ham nay de chen ca word va mean vao bang bam
-	void Insert(Node *k);                         // Ham nay de chen khoa k vao bang bam
-	void Place(int b, Node *k);                // Ham nay de chen Node k vao bucket thu b
-
-	void FindNode(int key, Node *k);           // Tim theo key
-	void Find(char word[]);                  // Tim theo tu
-
-	void DeleteNode(int key, Node *k);       // Xoa theo key
-	void Delete(char word[]);                // Xoa theo tu
-
-	void Display();                                 // Duyet toan bo bucket
-};
-
-void Dictionary::DocFile(Node Bucket[],int &n)
-{
-	ifstream in;
-	in.open(TenFile);
-	if (in)
-	{
-		in >> n;
-		for (int i = 0; i < n; i++)
-		{
-			in >> Bucket[i].word;
-			in >> Bucket[i].mean;
-		}
-	}
-	in.close();
-}
-void Dictionary::xuatFile(Node Bucket[], int n)
-{
-	for (int i = 0; i < n; i++)
-	{
-		printf("Word:%s\tMean:%s\n", Bucket[i].word, Bucket[i].mean);
-	}
-}
-bool Dictionary::Isempty()
-{
-	int dem = 0;
-	for (int i = 0; i < M; i++)
-	{
-		if (Bucket[i] != NULL)
-			dem++;
-	}
-	if (dem == 0)
-		return true;
-	else
-		return false;
-}
-
-Dictionary::Dictionary()
-{
-	for (int i = 0; i < M; i++)
-	{
-		Bucket[i] = 0;
-	}
-}
-
-void Dictionary::DeleteNode(int key, Node *k)    // Xoa theo key
-{
-	Node *temp = Bucket[key];
-	Node *node = Bucket[key];
-	if (node == NULL)
-	{
-		cout << "Khong co tu nay ";
-	}
+void docfile(void){
+	FILE *f = fopen("map.txt", "r");
+	if (f == NULL)
+		printf("\nKhong tim thay file");
 	else
 	{
-		if (_strcmpi(Bucket[key]->word, k->word) == 0)
-		{
-			Bucket[key] = Bucket[key]->next;
-		}
-		while (temp != NULL)
-		{
-			if (_strcmpi(temp->word, k->word) == 0)
-				break;
-			node = temp;
-			temp = temp->next;
-		}
-		if (temp != NULL)
-		{
-			node->next = temp->next;
-			node = NULL;
-			delete node;
-			temp->next = NULL;
-			delete temp;
-		}
-		else
-			cout << "Khong co tu nay ";
-	}
-}
-
-void Dictionary::Delete(char nWord[])              // Xoa theo tu
-{
-	if (Isempty() == true)
-		cout << "\nTu Dien rong \n";
-	int t = HashFunc(nWord[0]);
-	Node * temp = new Node(nWord);
-	DeleteNode(t, temp);
-}
-
-void Dictionary::FindNode(int key, Node * newnode)       // Tim theo Node
-{
-	if (Bucket[key] == NULL)
-	{
-		cout << "Khong co tu nay!" << endl;
-	}
-	else
-	{
-		Node * temp = Bucket[key];
-		int d = 0;
-		while (temp != NULL)
-		{
-			if (_strcmpi(temp->word, newnode->word) == 0)
-			{
-				temp->displayWord();
-				temp->displayMeaning();
-				d++;
+		fscanf(f, "%d", &n);
+		for (int i = 1; i <= n; i++){
+			for (int j = 1; j <= n; j++){
+				fscanf(f, "%d", &Matran[i][j]);
+				if (Matran[i][j] == 0) Matran[i][j] = VOCUNG;
 			}
-			temp = temp->next;
 		}
-		if (d == 0)
+	}
+}
+void KetQua(void){
+	char kq[MAX];
+	int p = 0;
+	cout << "\n\tTuyen duong di ngan nhat la :";
+	tam[p] = t;
+	p++;
+	int i = danhDau[t];
+	while (i != s){
+		tam[p++] = i;
+		i = danhDau[i];
+	}
+	tam[p] = s;
+	p++;
+	for (int i = p - 1; i >= 0; i--)
+	{
+		if (tam[i] == 1)
 		{
-			cout << endl << "Khong co tu nay!" << endl;
+			strcpy(kq, "Khu nghi duong ");
+			cout << " " << kq << "\t";
 		}
-	}
-};
-
-void Dictionary::Find(char nWord[])            // Tim theo tu
-{
-	if (Isempty())
-		cout << "\nTu Dien rong: \n";
-	int t = HashFunc(nWord[0]);
-	Node * temp = new Node(nWord);
-	FindNode(t, temp);
-};
-
-int Dictionary::HashFunc(char c)    // Ham bam (neu ky tu la a thi tra ve 0 ..... z thi tra ve 25)
-{
-	int a = c;
-	if (a >= 97)       // su dung bang ma ASCII
-		a = a - 32;
-	return (a % 65);
-};
-
-
-void Dictionary::Place(int b, Node *k)  // Ham nay de chen Node k vao bucket thu b
-{
-	if (Bucket[b] == 0)
-	{
-		Bucket[b] = k;
-	}
-	else
-	{
-		Node * temp = Bucket[b];
-		while (temp->next != NULL)
+		if (tam[i] == 2)
 		{
-			temp = temp->next;
+			strcpy(kq, "Choi ven ho");
+			cout << " " << kq << "\t";
 		}
-		temp->next = k;
-	}
-};
-
-void Dictionary::Insert(char nWord[], char nMean[])   // Ham insert nghia va tu vao bucket
-{
-	Node * newNode = new Node(nWord, nMean);
-	int t = HashFunc(nWord[0]);
-	Place(t, newNode);
-};
-
-void Dictionary::Insert(Node *k)         // Ham insert mot Node vao bucket
-{
-	int b;
-	b = HashFunc(k->word[0]);
-	Place(b, k);
-};
-
-void Dictionary::Display()                           // Duyet toan bo bucket
-{
-	if (Isempty() == true)
-		cout << "\nTu Dien rong \n";
-	Node * temp;
-	for (int i = 0; i<M; i++)
-	{
-		temp = Bucket[i];
-		while (temp != NULL)
+		if (tam[i] == 3)
 		{
-			temp->displayWord();
-			temp->displayMeaning();
-			cout << endl;
-			temp = temp->next;
+			strcpy(kq, "Dap vit");
+			cout << " " << kq << "\t";
+		}
+		if (tam[i] == 4)
+		{
+			strcpy(kq, "Khu vui choi thieu nhi");
+			cout << " " << kq << "\t ";
+		}
+		if (tam[i] == 5)
+		{
+			strcpy(kq, "Ho boi");
+			cout << " " << kq << "\t";
+		}
+		if (tam[i] == 6)
+		{
+			strcpy(kq, "Choi ven suoi ");
+			cout << " " << kq << "\t";
+		}
+		if (tam[i] == 7)
+		{
+			strcpy(kq, "Ho ca sau");
+			cout << " " << kq << "\t";
+		}
+		if (tam[i] == 8)
+		{
+			strcpy(kq, "Thue xe dap dien");
+			cout << " " << kq << "\t";
+		}
+		if (tam[i] == 9)
+		{
+			strcpy(kq, "Ban sung son");
+			cout << " " << kq << "\t";
+		}
+		if (tam[i] == 10)
+		{
+			strcpy(kq, "So thu");
+			cout << " " << kq << "\t ";
+		}
+		if (tam[i] == 11)
+		{
+			strcpy(kq, "Cuoi voi");
+			cout << " " << kq << "\t ";
+		}
+		if (tam[i] == 12)
+		{
+			strcpy(kq, "Cuoi da dieu");
+			cout << " " << kq << "\t";
+		}
+		if (tam[i] == 13)
+		{
+			strcpy(kq, "Cam trai");
+			cout << " " << kq << "\t";
 		}
 	}
-};
-
-void Menu(Dictionary &td)
+	cout << endl << "\tDo dai duong di la : " << d[t] * 1.8 << " m";
+	cout << "\n\n\n\n";
+}
+void Dijkstra(void){
+	int u, minp;
+	//khởi tạo nhãn tạm thời cho các đỉnh.
+	for (int v = 1; v <= n; v++){
+		d[v] = Matran[s][v];
+		danhDau[v] = s;
+		Duyet[v] = FALSE;
+	}
+	danhDau[s] = 0;
+	d[s] = 0;
+	Duyet[s] = TRUE;
+	//bươc lặp
+	while (!Duyet[t]) {
+		minp = VOCUNG;
+		//tìm đỉnh u sao cho d[u] là nhỏ nhất
+		for (int v = 1; v <= n; v++){
+			if ((!Duyet[v]) && (minp > d[v])){
+				u = v;
+				minp = d[v];
+			}
+		}
+		Duyet[u] = TRUE;// u la dinh co nhan tam thoi nho nhat
+		if (!Duyet[t]){
+			//gán nhãn lại cho các đỉnh.
+			for (int v = 1; v <= n; v++){
+				if ((!Duyet[v]) && (d[u] + Matran[u][v] < d[v])){
+					d[v] = d[u] + Matran[u][v];
+					danhDau[v] = u;
+				}
+			}
+		}
+	}
+}
+void nhap(char a[], char b[])
 {
-	int choice;
-	cout << "\t\t\t    Tu dien ung dung Bang Bam" << endl << endl;
-	cout << "\t\t\t    1/. Them tu khoa vao cay " << endl << endl;
-	cout << "\t\t\t    2/. Xoa Bot tu khoa " << endl << endl;
-	cout << "\t\t\t    3/. Tra cuu tu " << endl << endl;
-	cout << "\t\t\t    4/. Hien thi cay hien tai " << endl << endl;
-	cout << "\t\t\t    5/. De thoat khoi chuong trinh " << endl << endl << endl;
-	cout << "\t\t\t      Moi ban chon mot chuc nang  ";
-	cin >> choice;
-	switch (choice)
-	{
-	case 1:
-	{
-			  int n;
-			  system("cls");
-			  Node* data = new Node;
-			  td.DocFile(data,n);
-			  td.xuatFile(data, n);
-			  cout << "\nBan muon chen bao nhieu tu khoa: ";
-			  cin >> n;
-			  for (int i = 0; i < n; i++)
-			  {
-				  Node *data = new Node;
-				  data->Input();
-				  td.Insert(data);
-			  }
-			  cout << "\n\n Tu Dien sau khi da chen\n";
-			  td.DocFile(data, n);
-			  td.xuatFile(data, n);
-			  td.Display();
-			  _getch();
-			  system("cls");
-			  Menu(td);
-	}
-	case 2:
-	{
-			  system("cls");
-			  int n;
-			  Node* data = new Node;
-			  char word[100];
-			  td.DocFile(data, n);
-			  td.xuatFile(data, n);
-			  cout << endl;
-			  cout << "Nhap tu muon xoa: ";
-			  fflush(stdin);
-			  gets(word);
-			  td.Delete(word);
-			  cout << endl << "\nDanh sach sau khi xoa:";
-			  td.DocFile(data, n);
-			  td.xuatFile(data, n);
-			  td.Display();
-			  _getch();
-			  system("cls");
-			  Menu(td);
-	}
-	case 3:
-	{
-			  system("cls");
-			  int n;
-			  Node* data = new Node;
-			  char word[100];
-			  td.DocFile(data, n);
-			  td.xuatFile(data, n);
-			  cout << endl;
-			  cout << "Nhap tu muon tim: ";
-			  gets(word);
-			  td.Find(word);
-			  _getch();
-			  system("cls");
-			  Menu(td);
-	}
-	case 4:
-	{
-			  system("cls");
-			  Node* data = new Node;
-			  int n;
-			  td.DocFile(data, n);
-			  td.xuatFile(data, n);
-			  td.Display();
-			  _getch();
-			  system("cls");
-			  Menu(td);
-	}
-	case 5:
-	{
-			  exit(0);
-	}
-	default:
-	{
-			   system("cls");
-			   cout << "\n\tKhong co chuc nang nay: ";
-			   _getch();
-			   system("cls");
-			   Menu(td);
-	}
-	}
-
-};
-
-void main()
+	printf("\tNhap diem xuat phat  : ");
+	fflush(stdin);
+	gets(a);
+	printf("\tNhap dia diem ban muon den : ");
+	fflush(stdin);
+	gets(b);
+	fflush(stdin);
+	if (_stricmp(a, "nghi duong") == 0)
+		s = 1;
+	if (_stricmp(a, "choi ven ho") == 0)
+		s = 2;
+	if (_stricmp(a, "dap vit") == 0)
+		s = 3;
+	if (_stricmp(a, "khu thieu nhi") == 0)
+		s = 4;
+	if (_stricmp(a, "ho boi") == 0)
+		s = 5;
+	if (_stricmp(a, "choi ven suoi") == 0)
+		s = 6;
+	if (_stricmp(a, "ca sau") == 0)
+		s = 7;
+	if (_stricmp(a, "thue xe dap dien") == 0)
+		s = 8;
+	if (_stricmp(a, "ban sung son") == 0)
+		s = 9;
+	if (_stricmp(a, "so thu") == 0)
+		s = 10;
+	if (_stricmp(a, "cuoi voi") == 0)
+		s = 11;
+	if (_stricmp(a, "cuoi da dieu") == 0)
+		s = 12;
+	if (_stricmp(a, "cam trai") == 0)
+		s = 13;
+	//-----------------------------
+	if (_stricmp(b, "nghi duong") == 0)
+		t = 1;
+	if (_stricmp(b, "choi ven ho") == 0)
+		t = 2;
+	if (_stricmp(b, "dap vit") == 0)
+		t = 3;
+	if (_stricmp(b, "khu thieu nhi") == 0)
+		t = 4;
+	if (_stricmp(b, "ho boi") == 0)
+		t = 5;
+	if (_stricmp(b, "choi ven suoi") == 0)
+		t = 6;
+	if (_stricmp(b, "ca sau") == 0)
+		t = 7;
+	if (_stricmp(b, "thue xe dap dien") == 0)
+		t = 8;
+	if (_stricmp(b, "ban sung son") == 0)
+		t = 9;
+	if (_stricmp(b, "so thu") == 0)
+		t = 10;
+	if (_stricmp(b, "cuoi voi") == 0)
+		t = 11;
+	if (_stricmp(b, "cuoi da dieu") == 0)
+		t = 12;
+	if (_stricmp(b, "cam trai") == 0)
+		t = 13;
+}
+void map()
 {
-	Dictionary td;
-	Menu(td);
-};
+	cout << "\n                                                                    Cuoi da dieu";
+	cout << "\n                                                                      .                  ";
+	cout << "\n                   . . . Ca sau . . . .  .                          .                             ";
+	cout << "\n               .          .     .           .                    .                                ";
+	cout << "\n            .             .        .           .              Cuoi voi .  .  . .  .               ";
+	cout << "\n         .                .             .          .            .           .        .            ";
+	cout << "\n     .                    .                .            .      .             .        .          ";
+	cout << "\n Nghi duong. . . . . .Choi ven ho. . . . . Dap vit. . . . .Choi ven suoi       .        .         ";
+	cout << "\n   .                        .                    .               .           .          .        ";
+	cout << "\n     .                       .                      .               .       .            .        ";
+	cout << "\n      .                        .                     .                .     .             .         ";
+	cout << "\n       .                          .                   .              .  Cam trai         .    ";
+	cout << "\n        .                           .                  .          .        .            .           ";
+	cout << "\n         Khu thieu nhi. . . . . Thue xe dap dien       .         .         .           .                                     ";
+	cout << "\n          .                        .   .               .       .           .          .  ";
+	cout << "\n           .                    .         .           .      .            .          .   ";
+	cout << "\n             .              .                .       .     .             .         .     ";
+	cout << "\n               .        .                         .     .              .         .      ";
+	cout << "\n                 Ho boi . . . . . . . . . . .Ban sung son            .         .                                               ";
+	cout << "\n                                                    .              .          .      ";
+	cout << "\n                                                       .         .         .       ";
+	cout << "\n                                                          .     .       .                                                                   ";
+	cout << "\n                                                          So thu  .  .                 ";
+	cout << "\n                                                                                  ";
+	cout << "\n\n";
+
+}
+void main(void)
+{
+	printf("\n");
+	printf("*/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*");
+	printf("\n\t\t\tCHAO MUNG DEN CHUONG TRINH TIM DUONG DI TRONG KHU DU LICH VUON XOAI \n");
+
+	while (chon != 0)
+	{
+		map();
+		printf("\n1. Chuong trinh tim duong di ngan nhat");
+		printf("\n0. Thoat chuong trinh");
+		printf("\n\n\t\t\t\tNhap lua chon cua ban : ");
+		scanf("%d", &chon);
+		printf("\n");
+		switch (chon)
+		{
+		case 1:
+		{
+				  nhap(a, b);
+				  docfile();
+				  Dijkstra();
+				  KetQua();
+				  _getch();
+				  break;
+		}
+		case 0:
+			printf("\n\t\t\t\t\tCam on ban da su dung chuong trinh nay");
+			break;
+		default:
+			break;
+		}
+	}
+	_getch();
+}
