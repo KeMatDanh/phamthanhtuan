@@ -1,288 +1,561 @@
-/*
-Phạm Thanh Tuấn
-Nguyễn Hữu Trung
-Nội dung: Dùng thuật toán Dijkstra tìm đường đi trong khu du lịch Xoài Non
-*/
-#define _CRT_SECURE_NO_WARNINGS
-#include<iostream>
-#include<conio.h>
-#include<fstream> 
-#include <string>
-
-using namespace std;
-#define MAX 100
-#define TRUE 1
-#define FALSE  0
-#define VOCUNG 9999999
-
-int chon = -1;
-char a[10];
-char b[10];
-int n;//số đỉnh của đồ thị.
-int s = 0;//đỉnh đầu.
-int t = 0;//đỉnh cuối
-int danhDau[MAX];//mảng đánh dấu đường đi.
-int d[MAX];//mảng đánh dấu khoảng cách.
-int Matran[MAX][MAX];//ma trận trọng số
-int Duyet[MAX];//mảng đánh dấu đỉnh đã được gán nhãn.
-int  tam[MAX];
-
-
-void docfile(void){
-	FILE *f = fopen("map.txt", "r");
-	if (f == NULL)
-		printf("\nKhong tim thay file");
-	else
-	{
-		fscanf(f, "%d", &n);
-		for (int i = 1; i <= n; i++){
-			for (int j = 1; j <= n; j++){
-				fscanf(f, "%d", &Matran[i][j]);
-				if (Matran[i][j] == 0) Matran[i][j] = VOCUNG;
-			}
-		}
-	}
-}
-void KetQua(void){
-	char kq[MAX];
-	int p = 0;
-	cout << "\n\tTuyen duong di ngan nhat la :";
-	tam[p] = t;
-	p++;
-	int i = danhDau[t];
-	while (i != s){
-		tam[p++] = i;
-		i = danhDau[i];
-	}
-	tam[p] = s;
-	p++;
-	for (int i = p - 1; i >= 0; i--)
-	{
-		if (tam[i] == 1)
-		{
-			strcpy(kq, "Khu nghi duong ");
-			cout << " " << kq << "\t";
-		}
-		if (tam[i] == 2)
-		{
-			strcpy(kq, "Choi ven ho");
-			cout << " " << kq << "\t";
-		}
-		if (tam[i] == 3)
-		{
-			strcpy(kq, "Dap vit");
-			cout << " " << kq << "\t";
-		}
-		if (tam[i] == 4)
-		{
-			strcpy(kq, "Khu vui choi thieu nhi");
-			cout << " " << kq << "\t ";
-		}
-		if (tam[i] == 5)
-		{
-			strcpy(kq, "Ho boi");
-			cout << " " << kq << "\t";
-		}
-		if (tam[i] == 6)
-		{
-			strcpy(kq, "Choi ven suoi ");
-			cout << " " << kq << "\t";
-		}
-		if (tam[i] == 7)
-		{
-			strcpy(kq, "Ho ca sau");
-			cout << " " << kq << "\t";
-		}
-		if (tam[i] == 8)
-		{
-			strcpy(kq, "Thue xe dap dien");
-			cout << " " << kq << "\t";
-		}
-		if (tam[i] == 9)
-		{
-			strcpy(kq, "Ban sung son");
-			cout << " " << kq << "\t";
-		}
-		if (tam[i] == 10)
-		{
-			strcpy(kq, "So thu");
-			cout << " " << kq << "\t ";
-		}
-		if (tam[i] == 11)
-		{
-			strcpy(kq, "Cuoi voi");
-			cout << " " << kq << "\t ";
-		}
-		if (tam[i] == 12)
-		{
-			strcpy(kq, "Cuoi da dieu");
-			cout << " " << kq << "\t";
-		}
-		if (tam[i] == 13)
-		{
-			strcpy(kq, "Cam trai");
-			cout << " " << kq << "\t";
-		}
-	}
-	cout << endl << "\tDo dai duong di la : " << d[t] * 1.8 << " m";
-	cout << "\n\n\n\n";
-}
-void Dijkstra(void){
-	int u, minp;
-	//khởi tạo nhãn tạm thời cho các đỉnh.
-	for (int v = 1; v <= n; v++){
-		d[v] = Matran[s][v];
-		danhDau[v] = s;
-		Duyet[v] = FALSE;
-	}
-	danhDau[s] = 0;
-	d[s] = 0;
-	Duyet[s] = TRUE;
-	//bươc lặp
-	while (!Duyet[t]) {
-		minp = VOCUNG;
-		//tìm đỉnh u sao cho d[u] là nhỏ nhất
-		for (int v = 1; v <= n; v++){
-			if ((!Duyet[v]) && (minp > d[v])){
-				u = v;
-				minp = d[v];
-			}
-		}
-		Duyet[u] = TRUE;// u la dinh co nhan tam thoi nho nhat
-		if (!Duyet[t]){
-			//gán nhãn lại cho các đỉnh.
-			for (int v = 1; v <= n; v++){
-				if ((!Duyet[v]) && (d[u] + Matran[u][v] < d[v])){
-					d[v] = d[u] + Matran[u][v];
-					danhDau[v] = u;
-				}
-			}
-		}
-	}
-}
-void nhap(char a[], char b[])
-{
-	printf("\tNhap diem xuat phat  : ");
-	fflush(stdin);
-	gets(a);
-	printf("\tNhap dia diem ban muon den : ");
-	fflush(stdin);
-	gets(b);
-	fflush(stdin);
-	if (_stricmp(a, "nghi duong") == 0)
-		s = 1;
-	if (_stricmp(a, "choi ven ho") == 0)
-		s = 2;
-	if (_stricmp(a, "dap vit") == 0)
-		s = 3;
-	if (_stricmp(a, "khu thieu nhi") == 0)
-		s = 4;
-	if (_stricmp(a, "ho boi") == 0)
-		s = 5;
-	if (_stricmp(a, "choi ven suoi") == 0)
-		s = 6;
-	if (_stricmp(a, "ca sau") == 0)
-		s = 7;
-	if (_stricmp(a, "thue xe dap dien") == 0)
-		s = 8;
-	if (_stricmp(a, "ban sung son") == 0)
-		s = 9;
-	if (_stricmp(a, "so thu") == 0)
-		s = 10;
-	if (_stricmp(a, "cuoi voi") == 0)
-		s = 11;
-	if (_stricmp(a, "cuoi da dieu") == 0)
-		s = 12;
-	if (_stricmp(a, "cam trai") == 0)
-		s = 13;
-	//-----------------------------
-	if (_stricmp(b, "nghi duong") == 0)
-		t = 1;
-	if (_stricmp(b, "choi ven ho") == 0)
-		t = 2;
-	if (_stricmp(b, "dap vit") == 0)
-		t = 3;
-	if (_stricmp(b, "khu thieu nhi") == 0)
-		t = 4;
-	if (_stricmp(b, "ho boi") == 0)
-		t = 5;
-	if (_stricmp(b, "choi ven suoi") == 0)
-		t = 6;
-	if (_stricmp(b, "ca sau") == 0)
-		t = 7;
-	if (_stricmp(b, "thue xe dap dien") == 0)
-		t = 8;
-	if (_stricmp(b, "ban sung son") == 0)
-		t = 9;
-	if (_stricmp(b, "so thu") == 0)
-		t = 10;
-	if (_stricmp(b, "cuoi voi") == 0)
-		t = 11;
-	if (_stricmp(b, "cuoi da dieu") == 0)
-		t = 12;
-	if (_stricmp(b, "cam trai") == 0)
-		t = 13;
-}
-void map()
-{
-	cout << "\n                                                                    Cuoi da dieu";
-	cout << "\n                                                                      .                  ";
-	cout << "\n                   . . . Ca sau . . . .  .                          .                             ";
-	cout << "\n               .          .     .           .                    .                                ";
-	cout << "\n            .             .        .           .              Cuoi voi .  .  . .  .               ";
-	cout << "\n         .                .             .          .            .           .        .            ";
-	cout << "\n     .                    .                .            .      .             .        .          ";
-	cout << "\n Nghi duong. . . . . .Choi ven ho. . . . . Dap vit. . . . .Choi ven suoi       .        .         ";
-	cout << "\n   .                        .                    .               .           .          .        ";
-	cout << "\n     .                       .                      .               .       .            .        ";
-	cout << "\n      .                        .                     .                .     .             .         ";
-	cout << "\n       .                          .                   .              .  Cam trai         .    ";
-	cout << "\n        .                           .                  .          .        .            .           ";
-	cout << "\n         Khu thieu nhi. . . . . Thue xe dap dien       .         .         .           .                                     ";
-	cout << "\n          .                        .   .               .       .           .          .  ";
-	cout << "\n           .                    .         .           .      .            .          .   ";
-	cout << "\n             .              .                .       .     .             .         .     ";
-	cout << "\n               .        .                         .     .              .         .      ";
-	cout << "\n                 Ho boi . . . . . . . . . . .Ban sung son            .         .                                               ";
-	cout << "\n                                                    .              .          .      ";
-	cout << "\n                                                       .         .         .       ";
-	cout << "\n                                                          .     .       .                                                                   ";
-	cout << "\n                                                          So thu  .  .                 ";
-	cout << "\n                                                                                  ";
-	cout << "\n\n";
-
-}
-void main(void)
-{
-	printf("\n");
-	printf("*/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*");
-	printf("\n\t\t\tCHAO MUNG DEN CHUONG TRINH TIM DUONG DI TRONG KHU DU LICH VUON XOAI \n");
-
-	while (chon != 0)
-	{
-		map();
-		printf("\n1. Chuong trinh tim duong di ngan nhat");
-		printf("\n0. Thoat chuong trinh");
-		printf("\n\n\t\t\t\tNhap lua chon cua ban : ");
-		scanf("%d", &chon);
-		printf("\n");
-		switch (chon)
-		{
-		case 1:
-		{
-				  nhap(a, b);
-				  docfile();
-				  Dijkstra();
-				  KetQua();
-				  _getch();
-				  break;
-		}
-		case 0:
-			printf("\n\t\t\t\t\tCam on ban da su dung chuong trinh nay");
-			break;
-		default:
-			break;
-		}
-	}
-	_getch();
-}
+//#include "BTree.h"
+//
+//void main()
+//{
+//	BTree bt;
+//	initBTree(bt);
+//	ItemType a[] = { 1, 12, 8, 2, 25, 5, 14, 28, 17, 7, 52, 16, 48, 68, 3, 26, 29, 53, 55, 45 };
+//	int n = 20;
+//	ItemType key;
+//	int blanks = 0;
+//	int minnode, maxnode, dem=0, sum=0;
+//
+//	int chucnang;
+//	do
+//	{
+//		printf("\n\n CHUONG TRINH HIEN THUC CAY NHIEU NHANH");
+//		printf("\n\n Cac chuc nang chinh cua chuong trinh");
+//		printf("\n 1. Tao cay tu mang");
+//		printf("\n 2. Tao cay tu mang ngau nhien");
+//		printf("\n 3. Tao cay tu file");
+//		printf("\n 4. Them mot vai phan tu vao cay");
+//		printf("\n 5. Xoa phan tu trong cay");
+//		printf("\n 6. Tim kiem phan tu trong cay");
+//		printf("\n 7. Xuat ra cac nut chua it gia tri nhat");
+//		printf("\n 8. Xuat ra cac nut chua nhieu gia tri nhat");
+//		printf("\n 9. Dem cac nut la so nguyen to");
+//		printf("\n 10. Tong cac nut tren cay");
+//		printf("\n 0. Ket thuc chuong trinh");
+//		printf("\n\n Chuc nang ban chon: ");
+//		scanf_s("%d", &chucnang);
+//		switch (chucnang)
+//		{
+//		case 1:
+//		/*	printf("Creation of B tree for node: \n");
+//			scanf_s("%d", &n);
+//			initBTree(bt);
+//			for (int i = 0; i < n; i++)
+//			{
+//			key = a[i];
+//			insert(bt.Root, key);
+//			}
+//			printf("Btree is:\n");
+//			displayBTree(bt.Root, 0);*/
+//
+//			printf("Creation of B-Tree for node %d\n", M);
+//			initBTree(bt);
+//			for (int i = 0; i < n; i++) {
+//			key = a[i];
+//			insert(bt.Root, key);
+//			printf("B-Tree is added value %d:\n", key);
+//			displayBTree(bt.Root,blanks);
+//			_getch();
+//			}
+//
+//			printf("B-Tree is:\n");
+//			displayBTree(bt.Root,blanks);
+//			break;
+//		case 2:
+//			TaoCayTuDong(bt);
+//
+//			printf("Btree is:\n");
+//			displayBTree(bt.Root, 0);
+//			break;
+//		case 3:
+//			createbrtree_From_File(bt,n);
+//
+//			printf("Btree is:\n");
+//			displayBTree(bt.Root, 0);
+//			break;
+//		case 4:
+//		/*	printf("Creation of B-Tree for node %d\n", M);
+//			initBTree(bt);
+//			for (int i = 0; i < n; i++) {
+//				key = a[i];
+//				insert(bt.Root, key);
+//				printf("B-Tree is added value %d:\n", key);
+//				displayBTree(bt.Root,blanks);
+//				_getch();
+//			}
+//
+//			printf("B-Tree is:\n");
+//			displayBTree(bt.Root,blanks);*/
+//			printf("Enter the key want to insert: ");
+//			scanf_s("%d", &key);
+//			insert(bt.Root, key);
+//			printf("B-Tree is added value %d:\n", key);
+//			displayBTree(bt.Root, blanks);
+//			break;
+//		case 5:
+//			printf("Enter the key want to delete: ");
+//			scanf_s("%d", &key);
+//			deleteNode(bt.Root, key);
+//			break;
+//		case 6:
+//			printf("Enter the key want to search: ");
+//			scanf_s("%d", &key);
+//			search(bt.Root, key);
+//			break;
+//		case 7:
+//			minnode = bt.Root->numTree;
+//			nodeMinNumTree(bt.Root, minnode);
+//			printf("\nNode co so gia tri it nhat la: %d", minnode);
+//			printf("\nCac node co so gia tri it nhat la:\n");
+//			displayNodeMinNumTree(bt.Root, minnode);
+//			break;
+//		case 8:
+//		    maxnode = bt.Root->numTree;
+//			nodeMaxNumTree(bt.Root, maxnode);
+//			printf("\nNode co so gia tri it nhat la: %d", maxnode);
+//			printf("\nCac node co so gia tri it nhat la:\n");
+//			displayNodeMaxNumTree(bt.Root, maxnode);
+//			break;
+//		case 9:
+//			printf("\nCac nut la so nguyen to: %d", count_TNode_Is_PrimeNumber(bt.Root, dem));
+//			break;
+//	   case 10:
+//			printf("Tong cac nut tren cay:%d", sumNode(bt.Root, sum));
+//			break;
+//		}
+//	} while (chucnang != 0);
+//	_getch();
+//}/*End of main()*/
+//
+////
+//void TaoCayTuDong(BTree &bt)
+//{
+//	int n = 50 ;
+//	do
+//	{
+//		printf("Cho biet nut cua cay: ");
+//		scanf_s("%d", &n);
+//	} while (n >= 50);
+//	int* a = new int[n];
+//	initBTree(bt);
+//	srand((unsigned)time(NULL));
+//	for (int i = 0; i <=n; i++)
+//	{
+//		a[i] = (rand() % 100);
+//		insert(bt.Root, a[i]);
+//	}
+//}
+//void createbrtree_From_File(BTree &btree, int &n)
+//{
+//	initBTree(btree);
+//	int  y;
+//	FILE*f = fopen("INPUTBT.txt", "rt");
+//	fscanf(f, "%d", &n);
+//	if (f == NULL) printf( "Loi doc file");
+//	while (!feof(f))
+//	{
+//		fscanf(f, "%d", &y);
+//		insert(btree.Root, y);
+//	}
+//	fclose(f);
+//}
+////int check_PrimeNumber(ItemType x)
+////{
+////	if (x < 1) 
+////		return 0;
+////	for (int i = 2; i <= x-1; i++) {
+////		if (x % i == 0) {
+////			return 0;
+////		}
+////	}
+////	return 1;
+////}
+////int count_TNode_Is_PrimeNumber(NodePtr root)
+////{
+////	if (!root)  return 0;
+////	int nl = count_TNode_Is_PrimeNumber(root->Branch[M]);
+////	if (check_PrimeNumber(root->Keys[M-1]) == 1)
+////		return nl + 1;
+////	return nl;
+////}
+//
+////
+//void initBTree(BTree &bt)
+//{
+//	bt.Root = NULL;
+//}
+//void insert(NodePtr &root, ItemType key)
+//{
+//	NodePtr newNode;
+//	ItemType upKey;
+//	KeyStatus result;
+//	result = insertNode(root, key, &upKey, &newNode);
+//	if (result == Duplicate)
+//		printf("Key already available\n");
+//	if (result == InsertIt)
+//	{
+//		NodePtr upRoot = root;
+//		root = new BNode;
+//		root->numTree = 1;
+//		root->Keys[0] = upKey;
+//		root->Branch[0] = upRoot;
+//		root->Branch[1] = newNode;
+//	}/*End of if */
+//}/*End of insert()*/
+//
+//KeyStatus insertNode(NodePtr pCurrent, ItemType key, ItemType *upKey, NodePtr* newNode)
+//{
+//	NodePtr newPtr, lastPtr;
+//	int pos, i, numTree, splitPos;
+//	ItemType newKey, lastKey;
+//	KeyStatus result;
+//	if (pCurrent == NULL)
+//	{
+//		*newNode = NULL;
+//		*upKey = key;
+//		return InsertIt;
+//	}
+//	numTree = pCurrent->numTree;
+//	pos = searchPosition(key, pCurrent->Keys, numTree);
+//	if (pos < numTree && key == pCurrent->Keys[pos])
+//		return Duplicate;
+//	result = insertNode(pCurrent->Branch[pos], key, &newKey, &newPtr);
+//	if (result != InsertIt)
+//		return result;
+//	/*If Keys in node is less than M-1 where M is order of B tree*/
+//	if (numTree < M - 1)
+//	{
+//		pos = searchPosition(newKey, pCurrent->Keys, numTree);
+//		/*Shifting the key and pointer right for inserting the new key*/
+//		for (i = numTree; i > pos; i--)
+//		{
+//			pCurrent->Keys[i] = pCurrent->Keys[i - 1];
+//			pCurrent->Branch[i + 1] = pCurrent->Branch[i];
+//		}
+//		/*Key is inserted at exact location*/
+//		pCurrent->Keys[pos] = newKey;
+//		pCurrent->Branch[pos + 1] = newPtr;
+//		++pCurrent->numTree; /*incrementing the number of Keys in node*/
+//		return Success;
+//	}/*End of if */
+//	/*If Keys in nodes are maximum and position of node to be inserted is last*/
+//	if (pos == M - 1)
+//	{
+//		lastKey = newKey;
+//		lastPtr = newPtr;
+//	}
+//	else /*If Keys in node are maximum and position of node to be inserted is not last*/
+//	{
+//		lastKey = pCurrent->Keys[M - 2];
+//		lastPtr = pCurrent->Branch[M - 1];
+//		for (i = M - 2; i > pos; i--)
+//		{
+//			pCurrent->Keys[i] = pCurrent->Keys[i - 1];
+//			pCurrent->Branch[i + 1] = pCurrent->Branch[i];
+//		}
+//		pCurrent->Keys[pos] = newKey;
+//		pCurrent->Branch[pos + 1] = newPtr;
+//	}
+//	splitPos = (M - 1) / 2;
+//	(*upKey) = pCurrent->Keys[splitPos];
+//
+//	(*newNode) = new BNode;/*Right node after split*/
+//	pCurrent->numTree = splitPos; /*No. of Keys for left splitted node*/
+//	(*newNode)->numTree = M - 1 - splitPos; /*No. of Keys for right splitted node*/
+//	for (i = 0; i < (*newNode)->numTree; i++)
+//	{
+//		(*newNode)->Branch[i] = pCurrent->Branch[i + splitPos + 1];
+//		if (i < (*newNode)->numTree - 1)
+//			(*newNode)->Keys[i] = pCurrent->Keys[i + splitPos + 1];
+//		else
+//			(*newNode)->Keys[i] = lastKey;
+//	}
+//	(*newNode)->Branch[(*newNode)->numTree] = lastPtr;
+//	return InsertIt;
+//}/*End of insertNode()*/
+//
+//void displayBTree(NodePtr pRoot, int blanks) {
+//	if (pRoot) {
+//		int i;
+//		for (i = 1; i <= blanks; i++)
+//			printf(" ");
+//		for (i = 0; i < pRoot->numTree; i++)
+//			printf("%d ", pRoot->Keys[i]);
+//		printf("\n");
+//		for (i = 0; i <= pRoot->numTree; i++)
+//			displayBTree(pRoot->Branch[i], blanks + 10);
+//	}/*End of if*/
+//}/*End of displayBTree()*/
+//
+//int searchPosition(ItemType key, ItemType *keyArray, int numTree)
+//{
+//	int pos = 0;
+//	while (pos < numTree && key > keyArray[pos])
+//		pos++;
+//	return pos;
+//}/*End of searchPosition()*/
+//
+//NodePtr searchNode(NodePtr root, ItemType key)
+//{
+//	int pos, numTree;
+//	NodePtr pCurrent = root;
+//	while (pCurrent)
+//	{
+//		numTree = pCurrent->numTree;
+//		pos = searchPosition(key, pCurrent->Keys, numTree);
+//		if (pos < numTree && key == pCurrent->Keys[pos])
+//		{
+//			return pCurrent;
+//		}
+//		pCurrent = pCurrent->Branch[pos];
+//	}
+//	return NULL;
+//}/*End of search()*/
+//
+//void search(NodePtr root, ItemType key)
+//{
+//	int pos, i, numTree;
+//	NodePtr pCurrent = root;
+//	printf("Search path:\n");
+//	while (pCurrent)
+//	{
+//		numTree = pCurrent->numTree;
+//		for (i = 0; i < pCurrent->numTree; i++)
+//			printf(" %d", pCurrent->Keys[i]);
+//		printf("\n");
+//		pos = searchPosition(key, pCurrent->Keys, numTree);
+//		if (pos < numTree && key == pCurrent->Keys[pos])
+//		{
+//			printf("Key %d found in position %d of last dispalyed node\n", key, pos);
+//			return;
+//		}
+//		pCurrent = pCurrent->Branch[pos];
+//	}
+//	printf("Key %d is not available\n", key);
+//}/*End of search()*/
+//
+//void deleteNode(NodePtr &root, ItemType key)
+//{
+//	NodePtr upRoot;
+//	KeyStatus result;
+//	result = remove(root, root, key);
+//	switch (result)
+//	{
+//	case SearchFailure:
+//		printf("Key %d is not available\n", key);
+//		break;
+//	case LessKeys:
+//		upRoot = root;
+//		root = root->Branch[0];
+//		free(upRoot);
+//		printf("\nBtree after removing the %d value:\n", key);
+//		displayBTree(root, 0);
+//		break;
+//	case Success:
+//		printf("\nBtree after removing the %d value:\n", key);
+//		displayBTree(root, 0);
+//		break;
+//	}/*End of switch*/
+//}/*End of delnode()*/
+//
+//KeyStatus remove(NodePtr &root, NodePtr pCurrent, ItemType key)
+//{
+//	int pos, i, pivot, numTree, min;
+//	ItemType *keyArray;
+//	KeyStatus result;
+//	NodePtr *Branch, leftPtr, rightPtr;
+//
+//	if (pCurrent == NULL)
+//		return SearchFailure;
+//	/*Assigns values of node*/
+//	numTree = pCurrent->numTree;
+//	keyArray = pCurrent->Keys;
+//	Branch = pCurrent->Branch;
+//	min = (M - 1) / 2;/*Minimum number of Keys*/
+//
+//	pos = searchPosition(key, keyArray, numTree);
+//	if (Branch[0] == NULL)
+//	{
+//		if (pos == numTree || key < keyArray[pos])
+//			return SearchFailure;
+//		/*Shift Keys and pointers left*/
+//		for (i = pos + 1; i < numTree; i++)
+//		{
+//			keyArray[i - 1] = keyArray[i];
+//			Branch[i] = Branch[i + 1];
+//		}
+//		return --pCurrent->numTree >= (pCurrent == root ? 1 : min) ? Success : LessKeys;
+//	}/*End of if */
+//
+//	if (pos < numTree && key == keyArray[pos])
+//	{
+//		NodePtr qp = Branch[pos], qp1;
+//		ItemType nkey;
+//		while (1)
+//		{
+//			nkey = qp->numTree;
+//			qp1 = qp->Branch[nkey];
+//			if (qp1 == NULL)
+//				break;
+//			qp = qp1;
+//		}/*End of while*/
+//		keyArray[pos] = qp->Keys[nkey - 1];
+//		qp->Keys[nkey - 1] = key;
+//	}/*End of if */
+//	result = remove(root, Branch[pos], key);
+//	if (result != LessKeys)
+//		return result;
+//
+//	if (pos > 0 && Branch[pos - 1]->numTree > min)
+//	{
+//		pivot = pos - 1; /*pivot for left and right node*/
+//		leftPtr = Branch[pivot];
+//		rightPtr = Branch[pos];
+//		/*Assigns values for right node*/
+//		rightPtr->Branch[rightPtr->numTree + 1] = rightPtr->Branch[rightPtr->numTree];
+//		for (i = rightPtr->numTree; i > 0; i--)
+//		{
+//			rightPtr->Keys[i] = rightPtr->Keys[i - 1];
+//			rightPtr->Branch[i] = rightPtr->Branch[i - 1];
+//		}
+//		rightPtr->numTree++;
+//		rightPtr->Keys[0] = keyArray[pivot];
+//		rightPtr->Branch[0] = leftPtr->Branch[leftPtr->numTree];
+//		keyArray[pivot] = leftPtr->Keys[--leftPtr->numTree];
+//		return Success;
+//	}/*End of if */
+//	if (pos < numTree && Branch[pos + 1]->numTree > min)
+//	{
+//		pivot = pos; /*pivot for left and right node*/
+//		leftPtr = Branch[pivot];
+//		rightPtr = Branch[pivot + 1];
+//		/*Assigns values for left node*/
+//		leftPtr->Keys[leftPtr->numTree] = keyArray[pivot];
+//		leftPtr->Branch[leftPtr->numTree + 1] = rightPtr->Branch[0];
+//		keyArray[pivot] = rightPtr->Keys[0];
+//		leftPtr->numTree++;
+//		rightPtr->numTree--;
+//		for (i = 0; i < rightPtr->numTree; i++)
+//		{
+//			rightPtr->Keys[i] = rightPtr->Keys[i + 1];
+//			rightPtr->Branch[i] = rightPtr->Branch[i + 1];
+//		}/*End of for*/
+//		rightPtr->Branch[rightPtr->numTree] = rightPtr->Branch[rightPtr->numTree + 1];
+//		return Success;
+//	}/*End of if */
+//
+//	if (pos == numTree)
+//		pivot = pos - 1;
+//	else
+//		pivot = pos;
+//
+//	leftPtr = Branch[pivot];
+//	rightPtr = Branch[pivot + 1];
+//	/*merge right node with left node*/
+//	leftPtr->Keys[leftPtr->numTree] = keyArray[pivot];
+//	leftPtr->Branch[leftPtr->numTree + 1] = rightPtr->Branch[0];
+//	for (i = 0; i < rightPtr->numTree; i++)
+//	{
+//		leftPtr->Keys[leftPtr->numTree + 1 + i] = rightPtr->Keys[i];
+//		leftPtr->Branch[leftPtr->numTree + 2 + i] = rightPtr->Branch[i + 1];
+//	}
+//	leftPtr->numTree = leftPtr->numTree + rightPtr->numTree + 1;
+//	free(rightPtr); /*Remove right node*/
+//	for (i = pos + 1; i < numTree; i++)
+//	{
+//		keyArray[i - 1] = keyArray[i];
+//		Branch[i] = Branch[i + 1];
+//	}
+//	return --pCurrent->numTree >= (pCurrent == root ? 1 : min) ? Success : LessKeys;
+//}/*End of remove()*/
+//void nodeMinNumTree(NodePtr Root, int &minnode)
+//{
+//	if (Root)
+//	{
+//		if (minnode > Root->numTree)
+//			minnode = Root->numTree;
+//		for (int i = 0; i <= Root->numTree; i++)
+//		{
+//			nodeMinNumTree(Root->Branch[i], minnode);
+//		}
+//	}
+//}
+//void displayNodeMinNumTree(NodePtr Root, int min)
+//{
+//	if (Root)
+//	{
+//		if (min == Root->numTree)
+//		{
+//			for (int i = 0; i < Root->numTree; i++)
+//				printf("%d  ", Root->Keys[i]);
+//			printf("\n");
+//		}
+//		for (int i = 0; i <= Root->numTree; i++)
+//		{
+//			displayNodeMinNumTree(Root->Branch[i], min);
+//		}
+//	}
+//}
+//void nodeMaxNumTree(NodePtr Root, int &maxnode)
+//{
+//	if (Root)
+//	{
+//		if (maxnode < Root->numTree)
+//			maxnode = Root->numTree;
+//		for (int i = 0; i <= Root->numTree; i++)
+//		{
+//			nodeMaxNumTree(Root->Branch[i], maxnode);
+//		}
+//	}
+//}
+//void displayNodeMaxNumTree(NodePtr Root, int max)
+//{
+//	if (Root)
+//	{
+//		if (max == Root->numTree)
+//		{
+//			for (int i = 0; i < Root->numTree; i++)
+//				printf("%d  ", Root->Keys[i]);
+//			printf("\n");
+//		}
+//		for (int i = 0; i <= Root->numTree; i++)
+//		{
+//			displayNodeMinNumTree(Root->Branch[i], max);
+//		}
+//	}
+//}
+//int check_PrimeNumber(ItemType x)
+//{
+//	if (x < 1) return 0;
+//	for (int i = 2; i <= x-1; i++) {
+//		if (x % i == 0) 
+//		{
+//			return 0;
+//		}
+//	}
+//	return 1;
+//}
+//int kiemTraNodeTo(int a[], int n)
+//{
+//	for (int i = 0; i < n;i++)
+//	if (check_PrimeNumber(a[i]) == 0)
+//		return 0;
+//	return 1;
+//}
+//int count_TNode_Is_PrimeNumber(NodePtr root,int &dem)
+//{
+//	if (root)
+//	{
+//		if (kiemTraNodeTo(root->Keys, root->numTree))
+//			dem++;
+//		for (int i = 0; i < root->numTree; i++)
+//			count_TNode_Is_PrimeNumber(root->Branch[i], dem);
+//	}
+//	return dem;
+//}
+//int sumNode(NodePtr root,int &sum)
+//{
+//	if (!root)  return 0;
+//	for (int i = 0; i < root->numTree; i++)
+//	{
+//		sum += root->Keys[i];
+//	}
+//	for (int i = 0; i <= root->numTree; i++)
+//	{
+//		sumNode(root->Branch[i], sum);
+//	}
+//}
