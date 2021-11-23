@@ -1,0 +1,21 @@
+20
+map	Bando
+government	Chinhphu
+way	Duong
+art	NgheThuat
+world	Thegioi
+computer	maytinh
+people	Nguoi
+two	Hai
+family	GiaDinh
+history	LichSu
+health	SucKhoe
+system	HeThong
+information	ThongTin
+meat	Thit
+year	Nam
+thanks	Loicamon
+music	AmNhac
+person	Nguoi
+reading	Cachdoc
+method	Phuongphap
